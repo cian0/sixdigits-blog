@@ -49,6 +49,14 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="og:description" content={description} />
 <meta property="og:image" content={new URL(image.src, Astro.url)} />
 
+<!-- Google AdSense Auto Ads -->
+<script
+  type="text/partytown"
+  async
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5800870553377727"
+  crossorigin="anonymous"
+></script>
+
 <!-- Google Analytics -->
 <script type="text/partytown" async src="https://www.googletagmanager.com/gtag/js?id=G-5HQDFEDQM9"></script>
 <script type="text/partytown">
