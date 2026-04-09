@@ -3,6 +3,12 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+).slice(0, 5);
 ---
 
 <!doctype html>
@@ -13,37 +19,179 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<h1>Navigate the AI Era.<br/>Stay Ahead.</h1>
+				<p class="tagline">
+					Practical insights for tech professionals wrestling with what AI means for their careers —
+					and for fresh graduates ready to build with AI as their edge.
+				</p>
+				<a href="/blog" class="cta-btn">Read the Blog →</a>
+			</section>
+
+			<section class="topics">
+				<h2>What We Write About</h2>
+				<div class="topic-grid">
+					<div class="topic-card">
+						<span class="topic-icon">🤖</span>
+						<h3>AI & Your Career</h3>
+						<p>How to position yourself as AI automates the execution layer — and what skills actually matter now.</p>
+					</div>
+					<div class="topic-card">
+						<span class="topic-icon">🎓</span>
+						<h3>For Fresh Graduates</h3>
+						<p>How to enter the industry when entry-level hiring has collapsed — and turn AI fluency into your unfair advantage.</p>
+					</div>
+					<div class="topic-card">
+						<span class="topic-icon">🛠️</span>
+						<h3>Tools & Workflows</h3>
+						<p>Practical guides on AI coding tools, agentic workflows, and how senior engineers are actually using them.</p>
+					</div>
+					<div class="topic-card">
+						<span class="topic-icon">🧠</span>
+						<h3>Deep Dives</h3>
+						<p>Frameworks for thinking about software engineering, problem anatomy, and judgment in an AI-native world.</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="latest-posts">
+				<h2>Latest Posts</h2>
+				<ul>
+					{posts.map(post => (
+						<li>
+							<a href={`/blog/${post.id}/`}>
+								<span class="post-title">{post.data.title}</span>
+								<span class="post-date"><FormattedDate date={post.data.pubDate} /></span>
+							</a>
+						</li>
+					))}
+				</ul>
+				<a href="/blog" class="view-all">View all posts →</a>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	main {
+		max-width: 860px;
+		margin: 0 auto;
+		padding: 0 1em;
+	}
+
+	/* Hero */
+	.hero {
+		padding: 4em 0 3em;
+		text-align: center;
+	}
+	.hero h1 {
+		font-size: 2.8em;
+		font-weight: 800;
+		line-height: 1.15;
+		margin-bottom: 0.5em;
+		color: rgb(var(--black));
+	}
+	.tagline {
+		font-size: 1.15em;
+		color: rgb(var(--gray-dark));
+		max-width: 580px;
+		margin: 0 auto 1.5em;
+		line-height: 1.6;
+	}
+	.cta-btn {
+		display: inline-block;
+		background: var(--accent);
+		color: white;
+		padding: 0.75em 1.75em;
+		border-radius: 6px;
+		font-weight: 700;
+		font-size: 1em;
+		text-decoration: none;
+		transition: opacity 0.2s;
+	}
+	.cta-btn:hover {
+		opacity: 0.85;
+	}
+
+	/* Topics */
+	.topics {
+		padding: 2em 0;
+	}
+	.topics h2 {
+		font-size: 1.5em;
+		margin-bottom: 1em;
+		color: rgb(var(--black));
+	}
+	.topic-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 1.25em;
+	}
+	.topic-card {
+		background: rgb(var(--gray-light));
+		border-radius: 8px;
+		padding: 1.25em;
+	}
+	.topic-icon {
+		font-size: 1.8em;
+	}
+	.topic-card h3 {
+		margin: 0.4em 0 0.3em;
+		font-size: 1em;
+		color: rgb(var(--black));
+	}
+	.topic-card p {
+		font-size: 0.88em;
+		color: rgb(var(--gray-dark));
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	/* Latest Posts */
+	.latest-posts {
+		padding: 2em 0 3em;
+	}
+	.latest-posts h2 {
+		font-size: 1.5em;
+		margin-bottom: 1em;
+		color: rgb(var(--black));
+	}
+	.latest-posts ul {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.5em;
+	}
+	.latest-posts li {
+		border-bottom: 1px solid rgb(var(--gray-light));
+	}
+	.latest-posts li a {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		padding: 0.85em 0;
+		text-decoration: none;
+		color: rgb(var(--black));
+		gap: 1em;
+	}
+	.latest-posts li a:hover .post-title {
+		color: var(--accent);
+	}
+	.post-title {
+		font-weight: 600;
+		font-size: 1em;
+	}
+	.post-date {
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+		white-space: nowrap;
+	}
+	.view-all {
+		font-weight: 600;
+		color: var(--accent);
+		text-decoration: none;
+	}
+	.view-all:hover {
+		text-decoration: underline;
+	}
+</style>
