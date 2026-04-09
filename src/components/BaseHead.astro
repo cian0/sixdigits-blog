@@ -49,6 +49,15 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="og:description" content={description} />
 <meta property="og:image" content={new URL(image.src, Astro.url)} />
 
+<!-- Google Analytics -->
+<script type="text/partytown" async src="https://www.googletagmanager.com/gtag/js?id=G-5HQDFEDQM9"></script>
+<script type="text/partytown">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5HQDFEDQM9');
+</script>
+
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
