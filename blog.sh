@@ -75,6 +75,17 @@ FRONTMATTER
 
 dev_server() {
   header "🚀  Starting Dev Server"
+
+  # Kill any existing process on port 4321
+  local pid
+  pid=$(lsof -ti tcp:4321 2>/dev/null)
+  if [ -n "$pid" ]; then
+    info "Killing existing process on port 4321 (PID: $pid)..."
+    kill -9 "$pid" 2>/dev/null || true
+    sleep 1
+    success "Port 4321 cleared."
+  fi
+
   info "Blog will be live at http://localhost:4321 — press Ctrl+C to stop."
   cd "$BLOG_DIR" && npm run dev
 }

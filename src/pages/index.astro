@@ -7,191 +7,1080 @@ import { getCollection } from 'astro:content';
 import FormattedDate from '../components/FormattedDate.astro';
 
 const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-).slice(0, 5);
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const featured = posts[0];
+const bentoExtra = posts.slice(1, 4);
+const listPosts  = posts.slice(0, 6);
+
+function readTime(body: string | undefined): string {
+  if (!body) return '5 min read';
+  const words = body.trim().split(/\s+/).length;
+  return `${Math.max(1, Math.round(words / 200))} min read`;
+}
+
+// Dummy bento cards to fill grid if not enough real posts
+const dummyBento = [
+  {
+    id: null,
+    title: 'How AI Agents Are Replacing the Junior Dev Workflow',
+    description: 'Agentic loops, tool-use, and the new reality of software delivery — what it means when your IDE can ship a PR unattended.',
+    pubDate: new Date('2026-03-18'),
+    category: 'AI Tools',
+    readTime: '7 min read',
+  },
+  {
+    id: null,
+    title: 'The Prompt Engineer Is Already Obsolete',
+    description: 'Why the hottest job title of 2023 is fading, and what actually matters in a world of frontier models.',
+    pubDate: new Date('2026-03-10'),
+    category: 'Opinion',
+    readTime: '5 min read',
+  },
+  {
+    id: null,
+    title: 'Data Engineering in the Age of LLM Pipelines',
+    description: 'Embedding stores, vector DBs, and the new data stack emerging around retrieval-augmented generation.',
+    pubDate: new Date('2026-02-28'),
+    category: 'Data Engineering',
+    readTime: '9 min read',
+  },
+];
+
+// Dummy list articles
+const dummyList = [
+  {
+    category: 'Career',
+    title: 'Senior Engineers Are Thriving — Here\'s Exactly Why',
+    excerpt: 'The AI wave isn\'t flattening the org chart; it\'s amplifying the gap between those who can architect systems and those who cannot.',
+    date: 'Mar 24, 2026',
+    readTime: '6 min',
+  },
+  {
+    category: 'Automation',
+    title: 'GitHub Copilot Workspace: A Week in the Trenches',
+    excerpt: 'We ran a real-world sprint with Copilot Workspace as the primary implementation tool. Here\'s what broke, what shipped, and what surprised us.',
+    date: 'Mar 20, 2026',
+    readTime: '8 min',
+  },
+  {
+    category: 'AI Tools',
+    title: 'Claude 3.5 vs GPT-4o for Code Review: A Practical Benchmark',
+    excerpt: 'We threw 200 real PRs at both models. The results were more nuanced than the leaderboard suggests.',
+    date: 'Mar 15, 2026',
+    readTime: '10 min',
+  },
+  {
+    category: 'Data Engineering',
+    title: 'Why Your RAG Pipeline Is Lying to You',
+    excerpt: 'Retrieval-augmented generation sounds bulletproof in theory. In production, subtle chunking and embedding errors silently degrade answer quality.',
+    date: 'Mar 10, 2026',
+    readTime: '7 min',
+  },
+  {
+    category: 'Opinion',
+    title: 'The 10x Engineer Myth Was Always Wrong. Now It\'s Dangerous.',
+    excerpt: 'When AI tools can triple output overnight, glorifying raw individual productivity misses the actual leverage point: judgment.',
+    date: 'Mar 5, 2026',
+    readTime: '5 min',
+  },
+  {
+    category: 'Career',
+    title: 'How to Negotiate Your Salary in an AI-Saturated Job Market',
+    excerpt: 'Hiring is slower, but compensation for senior talent is rising. Here\'s how to position and negotiate when you\'re competing against AI-augmented peers.',
+    date: 'Feb 28, 2026',
+    readTime: '6 min',
+  },
+];
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section class="hero">
-				<h1>Navigate the AI Era.<br/>Stay Ahead.</h1>
-				<p class="tagline">
-					Practical insights for tech professionals wrestling with what AI means for their careers —
-					and for fresh graduates ready to build with AI as their edge.
-				</p>
-				<a href="/blog" class="cta-btn">Read the Blog →</a>
-			</section>
+<html lang="en" data-theme="dark">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <Header />
 
-			<section class="topics">
-				<h2>What We Write About</h2>
-				<div class="topic-grid">
-					<div class="topic-card">
-						<span class="topic-icon">🤖</span>
-						<h3>AI & Your Career</h3>
-						<p>How to position yourself as AI automates the execution layer — and what skills actually matter now.</p>
-					</div>
-					<div class="topic-card">
-						<span class="topic-icon">🎓</span>
-						<h3>For Fresh Graduates</h3>
-						<p>How to enter the industry when entry-level hiring has collapsed — and turn AI fluency into your unfair advantage.</p>
-					</div>
-					<div class="topic-card">
-						<span class="topic-icon">🛠️</span>
-						<h3>Tools & Workflows</h3>
-						<p>Practical guides on AI coding tools, agentic workflows, and how senior engineers are actually using them.</p>
-					</div>
-					<div class="topic-card">
-						<span class="topic-icon">🧠</span>
-						<h3>Deep Dives</h3>
-						<p>Frameworks for thinking about software engineering, problem anatomy, and judgment in an AI-native world.</p>
-					</div>
-				</div>
-			</section>
+    <!-- ════════════════════════════════════
+         HERO
+    ════════════════════════════════════ -->
+    <section class="hero" aria-label="Hero">
+      <div class="hero-grain" aria-hidden="true"></div>
 
-			<section class="latest-posts">
-				<h2>Latest Posts</h2>
-				<ul>
-					{posts.map(post => (
-						<li>
-							<a href={`/blog/${post.id}/`}>
-								<span class="post-title">{post.data.title}</span>
-								<span class="post-date"><FormattedDate date={post.data.pubDate} /></span>
-							</a>
-						</li>
-					))}
-				</ul>
-				<a href="/blog" class="view-all">View all posts →</a>
-			</section>
-		</main>
-		<Footer />
-	</body>
+      <div class="hero-inner">
+        <div class="hero-eyebrow">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>AI · Automation · Future of Work</span>
+        </div>
+
+        <h1 class="hero-headline">
+          The Intelligence<br/><em>Brief.</em>
+        </h1>
+
+        <p class="hero-sub">
+          Dispatches from the frontier of AI, automation, and the future of work.
+        </p>
+
+        <div class="hero-actions">
+          <a href="/blog" class="btn-primary">Read the blog</a>
+          <a href="/rss.xml" class="btn-ghost">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/>
+              <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+            RSS
+          </a>
+        </div>
+      </div>
+
+      <!-- Featured article card overlapping hero bottom -->
+      {featured && (
+        <div class="featured-wrap">
+          <a href={`/blog/${featured.id}/`} class="featured-card reveal">
+            <div class="featured-left">
+              <div class="featured-meta">
+                <span class="tag">Featured</span>
+                <span class="meta-sep">·</span>
+                <FormattedDate date={featured.data.pubDate} />
+                <span class="meta-sep">·</span>
+                <span>{readTime(featured.body)}</span>
+              </div>
+              <h2 class="featured-title">{featured.data.title}</h2>
+              {featured.data.description && (
+                <p class="featured-desc">{featured.data.description}</p>
+              )}
+            </div>
+            <div class="featured-right" aria-hidden="true">
+              <span class="featured-cta-arrow">→</span>
+            </div>
+          </a>
+        </div>
+      )}
+    </section>
+
+    <main>
+      <!-- ════════════════════════════════════
+           BENTO GRID
+      ════════════════════════════════════ -->
+      <section class="section bento-section" aria-label="Featured posts">
+        <div class="section-header">
+          <h2 class="section-title">Recent Stories</h2>
+          <a href="/blog" class="section-link">All posts →</a>
+        </div>
+
+        <div class="bento-grid">
+          <!-- Large card (real first extra post or dummy) -->
+          {(() => {
+            const p = bentoExtra[0];
+            const d = dummyBento[0];
+            const href = p ? `/blog/${p.id}/` : '#';
+            const title = p ? p.data.title : d.title;
+            const desc  = p ? (p.data.description || d.description) : d.description;
+            const date  = p ? p.data.pubDate : d.pubDate;
+            const rt    = p ? readTime(p.body) : d.readTime;
+            const cat   = d.category;
+            return (
+              <a href={href} class="bento-card bento-large reveal">
+                <div class="bento-body">
+                  <span class="tag tag-sm">{cat}</span>
+                  <h3 class="bento-title">{title}</h3>
+                  <p class="bento-desc">{desc}</p>
+                </div>
+                <div class="bento-footer">
+                  <div class="author-row">
+                    <div class="avatar" aria-hidden="true">S</div>
+                    <span class="author-name">sixdigits.ai</span>
+                  </div>
+                  <span class="bento-meta"><FormattedDate date={date} /> · {rt}</span>
+                </div>
+              </a>
+            );
+          })()}
+
+          <!-- Two stacked small cards -->
+          <div class="bento-stack">
+            {[1, 2].map(i => {
+              const p = bentoExtra[i];
+              const d = dummyBento[i];
+              const href  = p ? `/blog/${p.id}/` : '#';
+              const title = p ? p.data.title : d.title;
+              const desc  = p ? (p.data.description || d.description) : d.description;
+              const date  = p ? p.data.pubDate : d.pubDate;
+              const rt    = p ? readTime(p.body) : d.readTime;
+              const cat   = d.category;
+              return (
+                <a href={href} class="bento-card bento-small reveal" style={`animation-delay:${i * 80}ms`}>
+                  <div class="bento-body">
+                    <span class="tag tag-sm">{cat}</span>
+                    <h3 class="bento-title bento-title-sm">{title}</h3>
+                  </div>
+                  <div class="bento-footer">
+                    <div class="author-row">
+                      <div class="avatar avatar-xs" aria-hidden="true">S</div>
+                      <span class="author-name">{rt}</span>
+                    </div>
+                    <span class="bento-meta"><FormattedDate date={date} /></span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          <!-- Full-width horizontal card -->
+          {(() => {
+            const d = dummyBento[2];
+            return (
+              <a href="/blog" class="bento-card bento-full reveal">
+                <div class="bento-full-inner">
+                  <div>
+                    <span class="tag tag-sm">{d.category}</span>
+                    <h3 class="bento-title">{d.title}</h3>
+                    <p class="bento-desc">{d.description}</p>
+                  </div>
+                  <div class="bento-full-right">
+                    <div class="author-row">
+                      <div class="avatar" aria-hidden="true">S</div>
+                      <div>
+                        <div class="author-name">sixdigits.ai</div>
+                        <div class="bento-meta">{d.readTime}</div>
+                      </div>
+                    </div>
+                    <span class="bento-arrow">→</span>
+                  </div>
+                </div>
+              </a>
+            );
+          })()}
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════
+           TOPICS STRIP
+      ════════════════════════════════════ -->
+      <section class="section topics-section" aria-label="Topics">
+        <div class="topics-outer">
+          <div class="topics-fade-left" aria-hidden="true"></div>
+          <div class="topics-scroll" role="list">
+            {['All', 'AI Tools', 'Automation', 'Data Engineering', 'Career', 'Opinion'].map((t, i) => (
+              <button
+                class={`topic-pill${i === 0 ? ' active' : ''}`}
+                role="listitem"
+                data-topic={t}
+                type="button"
+              >{t}</button>
+            ))}
+          </div>
+          <div class="topics-fade-right" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════
+           LATEST ARTICLES LIST
+      ════════════════════════════════════ -->
+      <section class="section articles-section" aria-label="Latest articles">
+        <div class="section-header">
+          <h2 class="section-title">Latest Articles</h2>
+        </div>
+
+        <ol class="articles-list">
+          {dummyList.map((art, i) => (
+            <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
+              <a href="/blog" class="article-link">
+                <span class="article-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="article-body">
+                  <div class="article-meta-row">
+                    <span class="tag tag-xs">{art.category}</span>
+                    <span class="article-date">{art.date} · {art.readTime} read</span>
+                  </div>
+                  <h3 class="article-title">{art.title}</h3>
+                  <p class="article-excerpt">{art.excerpt}</p>
+                </div>
+                <span class="article-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+
+        <!-- Real posts if available -->
+        {listPosts.length > 0 && (
+          <div class="real-posts-divider">
+            <span>From the blog</span>
+          </div>
+        )}
+        {listPosts.map((post, i) => (
+          <ol class="articles-list" start={dummyList.length + 1 + i}>
+            <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
+              <a href={`/blog/${post.id}/`} class="article-link">
+                <span class="article-num" aria-hidden="true">{String(dummyList.length + 1 + i).padStart(2, '0')}</span>
+                <div class="article-body">
+                  <div class="article-meta-row">
+                    <span class="tag tag-xs">AI</span>
+                    <span class="article-date"><FormattedDate date={post.data.pubDate} /> · {readTime(post.body)} read</span>
+                  </div>
+                  <h3 class="article-title">{post.data.title}</h3>
+                  {post.data.description && <p class="article-excerpt">{post.data.description}</p>}
+                </div>
+                <span class="article-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          </ol>
+        ))}
+
+        <div class="load-more-wrap">
+          <button class="btn-load-more" type="button">Load more articles</button>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════
+           NEWSLETTER CTA
+      ════════════════════════════════════ -->
+      <section class="section newsletter-section reveal" aria-label="Newsletter">
+        <div class="newsletter-inner">
+          <div class="newsletter-text">
+            <span class="nl-eyebrow">Newsletter</span>
+            <h2 class="nl-headline">Stay ahead of the curve.</h2>
+            <p class="nl-proof">Join 12,000+ readers. No spam. Unsubscribe anytime.</p>
+          </div>
+          <form class="nl-form" onsubmit="return false;" aria-label="Subscribe to newsletter">
+            <input
+              type="email"
+              class="nl-input"
+              placeholder="your@email.com"
+              required
+              aria-label="Email address"
+            />
+            <button type="submit" class="nl-btn">Subscribe</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
 </html>
 
+<script>
+  // ── Topic pills ──────────────────────────────────────────────
+  document.querySelectorAll('.topic-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.topic-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // ── Scroll reveal (IntersectionObserver) ────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer  = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry, idx) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.08 }
+  );
+  revealEls.forEach(el => observer.observe(el));
+</script>
+
 <style>
-	main {
-		max-width: 860px;
-		margin: 0 auto;
-		padding: 0 1em;
-	}
+  /* ── Full-width layout override ── */
+  :global(body) { overflow-x: hidden; }
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
 
-	/* Hero */
-	.hero {
-		padding: 4em 0 3em;
-		text-align: center;
-	}
-	.hero h1 {
-		font-size: 2.8em;
-		font-weight: 800;
-		line-height: 1.15;
-		margin-bottom: 0.5em;
-		color: rgb(var(--black));
-	}
-	.tagline {
-		font-size: 1.15em;
-		color: rgb(var(--gray-dark));
-		max-width: 580px;
-		margin: 0 auto 1.5em;
-		line-height: 1.6;
-	}
-	.cta-btn {
-		display: inline-block;
-		background: var(--accent);
-		color: white;
-		padding: 0.75em 1.75em;
-		border-radius: 6px;
-		font-weight: 700;
-		font-size: 1em;
-		text-decoration: none;
-		transition: opacity 0.2s;
-	}
-	.cta-btn:hover {
-		opacity: 0.85;
-	}
+  /* ── Reveal animation ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: none;
+  }
 
-	/* Topics */
-	.topics {
-		padding: 2em 0;
-	}
-	.topics h2 {
-		font-size: 1.5em;
-		margin-bottom: 1em;
-		color: rgb(var(--black));
-	}
-	.topic-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1.25em;
-	}
-	.topic-card {
-		background: rgb(var(--gray-light));
-		border-radius: 8px;
-		padding: 1.25em;
-	}
-	.topic-icon {
-		font-size: 1.8em;
-	}
-	.topic-card h3 {
-		margin: 0.4em 0 0.3em;
-		font-size: 1em;
-		color: rgb(var(--black));
-	}
-	.topic-card p {
-		font-size: 0.88em;
-		color: rgb(var(--gray-dark));
-		margin: 0;
-		line-height: 1.5;
-	}
+  /* ════════════════════════════════════
+     HERO
+  ════════════════════════════════════ */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--bg-base);
+    overflow: hidden;
+  }
 
-	/* Latest Posts */
-	.latest-posts {
-		padding: 2em 0 3em;
-	}
-	.latest-posts h2 {
-		font-size: 1.5em;
-		margin-bottom: 1em;
-		color: rgb(var(--black));
-	}
-	.latest-posts ul {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 1.5em;
-	}
-	.latest-posts li {
-		border-bottom: 1px solid rgb(var(--gray-light));
-	}
-	.latest-posts li a {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		padding: 0.85em 0;
-		text-decoration: none;
-		color: rgb(var(--black));
-		gap: 1em;
-	}
-	.latest-posts li a:hover .post-title {
-		color: var(--accent);
-	}
-	.post-title {
-		font-weight: 600;
-		font-size: 1em;
-	}
-	.post-date {
-		font-size: 0.85em;
-		color: rgb(var(--gray));
-		white-space: nowrap;
-	}
-	.view-all {
-		font-weight: 600;
-		color: var(--accent);
-		text-decoration: none;
-	}
-	.view-all:hover {
-		text-decoration: underline;
-	}
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+  }
+
+  /* No gradient blobs — just a single thin teal rule at bottom */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent) 40%, transparent);
+    opacity: 0.25;
+  }
+
+  .hero-inner {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 8rem 2rem 15rem;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.6rem;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.25; }
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(3rem, 6vw, 7rem);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    margin: 0 0 1.25rem;
+  }
+  .hero-headline em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 1.5vw, 1.18rem);
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 52ch;
+    margin: 0 0 2.25rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--accent);
+    color: #0f0f11;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.7em 1.45em;
+    border-radius: 7px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+    min-height: 44px;
+  }
+  .btn-primary:hover { opacity: 0.85; color: #0f0f11; }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.7em 1.1em;
+    border-radius: 7px;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.10);
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
+    min-height: 44px;
+  }
+  .btn-ghost:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22); opacity: 1; }
+
+  /* ── Featured card ── */
+  .featured-wrap {
+    position: absolute;
+    bottom: -2.5rem;
+    left: 0; right: 0;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+    /* center absolute trick */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+  }
+
+  .featured-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-surface);
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.10);
+    border-radius: 14px;
+    padding: 1.75rem 2rem;
+    text-decoration: none;
+    max-width: 900px;
+    width: 100%;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .featured-card:hover {
+    border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    opacity: 1;
+  }
+
+  .featured-left { flex: 1; min-width: 0; }
+
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.7rem;
+    flex-wrap: wrap;
+  }
+  .meta-sep { opacity: 0.35; }
+
+  .featured-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    line-height: 1.22;
+    color: var(--text-primary);
+    margin: 0 0 0.55rem;
+  }
+
+  .featured-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .featured-right {
+    flex-shrink: 0;
+  }
+  .featured-cta-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    color: var(--accent);
+    font-size: 1rem;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .featured-card:hover .featured-cta-arrow {
+    background: var(--accent-dim);
+    transform: translateX(2px);
+  }
+
+  /* ════════════════════════════════════
+     SHARED SECTION CHROME
+  ════════════════════════════════════ */
+  .section {
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+  }
+  .section-title {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .section-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .section-link:hover { opacity: 0.8; }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2em 0.7em;
+    border-radius: 4px;
+  }
+  .tag-sm { font-size: 0.68rem; }
+  .tag-xs { font-size: 0.65rem; padding: 0.15em 0.55em; }
+
+  /* ════════════════════════════════════
+     BENTO GRID
+  ════════════════════════════════════ */
+  .bento-section {
+    padding-top: 6.5rem; /* clear the overlapping featured card */
+  }
+
+  .bento-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+  }
+
+  .bento-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    /* shadow not border for elevation */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+    transition: box-shadow 0.2s, transform 0.2s;
+    min-height: 220px;
+  }
+  .bento-card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px oklch(from var(--text-primary, #e8e8e0) l c h / 0.18);
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+
+  .bento-large { grid-column: 1; grid-row: 1; }
+  .bento-stack { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 1rem; }
+  .bento-small { min-height: 160px; }
+  .bento-full  { grid-column: 1 / -1; grid-row: 2; min-height: 140px; }
+
+  .bento-body { flex: 1; }
+  .bento-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    color: var(--text-primary);
+    margin: 0.5rem 0 0.4rem;
+  }
+  .bento-title-sm { font-size: 1rem; }
+  .bento-desc {
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .bento-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .author-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .avatar-xs { width: 22px; height: 22px; font-size: 0.6rem; }
+  .author-name { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; }
+  .bento-meta { font-size: 0.76rem; color: var(--text-muted); }
+
+  /* Full-width bento card */
+  .bento-full-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .bento-full-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+  .bento-arrow {
+    font-size: 1.2rem;
+    color: var(--accent);
+    transition: transform 0.15s;
+  }
+  .bento-card:hover .bento-arrow { transform: translateX(4px); }
+
+  /* ════════════════════════════════════
+     TOPICS STRIP
+  ════════════════════════════════════ */
+  .topics-section {
+    padding: 0 0 4rem;
+  }
+
+  .topics-outer {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .topics-scroll {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.25rem 0.75rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .topics-scroll::-webkit-scrollbar { display: none; }
+
+  .topics-fade-left,
+  .topics-fade-right {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 3rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .topics-fade-left {
+    left: 0;
+    background: linear-gradient(to right, var(--bg-base), transparent);
+  }
+  .topics-fade-right {
+    right: 0;
+    background: linear-gradient(to left, var(--bg-base), transparent);
+  }
+
+  .topic-pill {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.45em 1.1em;
+    border-radius: 999px;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    min-height: 44px;
+    font-family: var(--font-body);
+  }
+  .topic-pill:hover {
+    border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22);
+    color: var(--text-primary);
+  }
+  .topic-pill.active {
+    background: var(--accent);
+    color: #0f0f11;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ════════════════════════════════════
+     ARTICLES LIST
+  ════════════════════════════════════ */
+  .articles-section {
+    padding-top: 0;
+    border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+  }
+
+  .articles-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .article-row {
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07);
+  }
+  .article-row:first-child { border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07); }
+
+  .article-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+  }
+  .article-link:hover .article-title { color: var(--accent); }
+  .article-link:hover .article-arrow { color: var(--accent); transform: translateX(4px); }
+  .article-link:hover { opacity: 1; }
+  /* Alternating hover tint */
+  .article-row:nth-child(even) .article-link:hover { background: oklch(from var(--text-primary, #e8e8e0) l c h / 0.02); }
+
+  .article-num {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    opacity: 0.4;
+    flex-shrink: 0;
+    padding-top: 0.15em;
+    min-width: 2ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .article-body { flex: 1; min-width: 0; }
+
+  .article-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .article-date { font-size: 0.78rem; color: var(--text-muted); }
+
+  .article-title {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+    line-height: 1.35;
+    transition: color 0.15s;
+  }
+
+  .article-excerpt {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .article-arrow {
+    font-size: 1rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    padding-top: 0.2em;
+    transition: color 0.15s, transform 0.15s;
+  }
+
+  .real-posts-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .real-posts-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+  }
+
+  .load-more-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 0 0;
+  }
+  .btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: none;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    border-radius: 7px;
+    padding: 0.7em 1.75em;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: var(--font-body);
+    min-height: 44px;
+  }
+  .btn-load-more:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.25); }
+
+  /* ════════════════════════════════════
+     NEWSLETTER
+  ════════════════════════════════════ */
+  .newsletter-section {
+    background: var(--bg-surface);
+    max-width: 100% !important;
+    padding: 5rem 2rem !important;
+    border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+  }
+
+  .newsletter-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .newsletter-text { flex: 1; min-width: 200px; }
+
+  .nl-eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+  .nl-headline {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+    line-height: 1.15;
+  }
+  .nl-proof {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .nl-form {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .nl-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-base);
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    border-radius: 7px;
+    padding: 0.7em 1em;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.15s;
+    min-height: 44px;
+  }
+  .nl-input::placeholder { color: var(--text-muted); }
+  .nl-input:focus { border-color: var(--accent); }
+
+  .nl-btn {
+    background: var(--accent);
+    color: #0f0f11;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.7em 1.5em;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: opacity 0.15s;
+    white-space: nowrap;
+    min-height: 44px;
+  }
+  .nl-btn:hover { opacity: 0.85; }
+
+  /* ════════════════════════════════════
+     RESPONSIVE
+  ════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .bento-grid {
+      grid-template-columns: 1fr;
+    }
+    .bento-stack { flex-direction: row; }
+    .bento-small { flex: 1; }
+    .bento-full { grid-column: 1; }
+    .bento-full-inner { flex-direction: column; }
+    .bento-full-right { flex-direction: row; align-items: center; }
+  }
+
+  @media (max-width: 640px) {
+    .hero-inner { padding: 6rem 1rem 17rem; }
+    .featured-wrap { padding: 0 1rem; }
+    .featured-card { padding: 1.25rem; flex-direction: column; }
+    .featured-right { display: none; }
+    .bento-section { padding-top: 8rem; }
+    .section { padding: 3rem 1rem; }
+    .bento-stack { flex-direction: column; }
+    .newsletter-section { padding: 3rem 1rem !important; }
+    .article-link { gap: 0.75rem; }
+    .article-num { display: none; }
+  }
 </style>

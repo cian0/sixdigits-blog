@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
@@ -8,107 +7,470 @@ import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+function readTime(body: string | undefined): string {
+  if (!body) return '5 min read';
+  const words = body.trim().split(/\s+/).length;
+  return `${Math.max(1, Math.round(words / 200))} min read`;
+}
+
+// Dummy posts to pad the list with realistic content
+const dummyPosts = [
+  {
+    id: null,
+    slug: null,
+    category: 'AI Tools',
+    title: 'How AI Agents Are Replacing the Junior Dev Workflow',
+    description: 'Agentic loops, tool-use, and the new reality of software delivery — what it means when your IDE can ship a PR unattended.',
+    date: 'Mar 18, 2026',
+    readTime: '7 min read',
+  },
+  {
+    id: null,
+    slug: null,
+    category: 'Opinion',
+    title: 'The Prompt Engineer Is Already Obsolete',
+    description: 'Why the hottest job title of 2023 is fading, and what actually matters in a world of frontier models.',
+    date: 'Mar 10, 2026',
+    readTime: '5 min read',
+  },
+  {
+    id: null,
+    slug: null,
+    category: 'Data Engineering',
+    title: 'Data Engineering in the Age of LLM Pipelines',
+    description: 'Embedding stores, vector DBs, and the new data stack emerging around retrieval-augmented generation.',
+    date: 'Feb 28, 2026',
+    readTime: '9 min read',
+  },
+  {
+    id: null,
+    slug: null,
+    category: 'Career',
+    title: 'Senior Engineers Are Thriving — Here\'s Exactly Why',
+    description: 'The AI wave isn\'t flattening the org chart; it\'s amplifying the gap between those who can architect systems and those who cannot.',
+    date: 'Feb 20, 2026',
+    readTime: '6 min read',
+  },
+  {
+    id: null,
+    slug: null,
+    category: 'Automation',
+    title: 'GitHub Copilot Workspace: A Week in the Trenches',
+    description: 'We ran a real-world sprint with Copilot Workspace as the primary implementation tool. Here\'s what broke, what shipped, and what surprised us.',
+    date: 'Feb 14, 2026',
+    readTime: '8 min read',
+  },
+];
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
+<html lang="en" data-theme="dark">
+  <head>
+    <BaseHead title={`Blog — ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <Header />
+
+    <main>
+      <!-- ── Page Header ── -->
+      <div class="page-header">
+        <div class="page-header-inner">
+          <div class="page-eyebrow">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span>All Articles</span>
+          </div>
+          <h1 class="page-title">The Intelligence Brief</h1>
+          <p class="page-sub">Dispatches from the frontier of AI, automation, and the future of work.</p>
+        </div>
+      </div>
+
+      <!-- ── Topics filter strip ── -->
+      <div class="topics-bar">
+        <div class="topics-bar-inner">
+          <div class="topics-fade-left" aria-hidden="true"></div>
+          <div class="topics-scroll" role="list">
+            {['All', 'AI Tools', 'Automation', 'Data Engineering', 'Career', 'Opinion'].map((t, i) => (
+              <button
+                class={`topic-pill${i === 0 ? ' active' : ''}`}
+                role="listitem"
+                data-topic={t}
+                type="button"
+              >{t}</button>
+            ))}
+          </div>
+          <div class="topics-fade-right" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- ── Articles ── -->
+      <section class="articles-section" aria-label="Blog posts">
+        <div class="articles-inner">
+
+          <!-- Real posts (if any) at top -->
+          {posts.length > 0 && (
+            <div class="posts-group">
+              <div class="group-label">Latest</div>
+              <ol class="articles-list">
+                {posts.map((post, i) => (
+                  <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
+                    <a href={`/blog/${post.id}/`} class="article-link">
+                      <span class="article-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                      <div class="article-body">
+                        <div class="article-meta-row">
+                          <span class="tag tag-xs">AI</span>
+                          <span class="article-date">
+                            <FormattedDate date={post.data.pubDate} />
+                            &nbsp;·&nbsp;{readTime(post.body)}
+                          </span>
+                        </div>
+                        <h2 class="article-title">{post.data.title}</h2>
+                        {post.data.description && (
+                          <p class="article-excerpt">{post.data.description}</p>
+                        )}
+                      </div>
+                      <span class="article-arrow" aria-hidden="true">→</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          <!-- Dummy posts -->
+          <div class="posts-group">
+            {posts.length > 0 && <div class="group-label">More from the archive</div>}
+            <ol class="articles-list" start={posts.length + 1}>
+              {dummyPosts.map((post, i) => (
+                <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
+                  <a href="#" class="article-link">
+                    <span class="article-num" aria-hidden="true">{String(posts.length + i + 1).padStart(2, '0')}</span>
+                    <div class="article-body">
+                      <div class="article-meta-row">
+                        <span class="tag tag-xs">{post.category}</span>
+                        <span class="article-date">{post.date} · {post.readTime}</span>
+                      </div>
+                      <h2 class="article-title">{post.title}</h2>
+                      <p class="article-excerpt">{post.description}</p>
+                    </div>
+                    <span class="article-arrow" aria-hidden="true">→</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div class="load-more-wrap">
+            <button class="btn-load-more" type="button">Load more articles</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Newsletter ── -->
+      <section class="newsletter-section reveal" aria-label="Newsletter">
+        <div class="newsletter-inner">
+          <div class="nl-text">
+            <span class="nl-eyebrow">Newsletter</span>
+            <h2 class="nl-headline">Stay ahead of the curve.</h2>
+            <p class="nl-proof">Join 12,000+ readers. No spam. Unsubscribe anytime.</p>
+          </div>
+          <form class="nl-form" onsubmit="return false;" aria-label="Subscribe to newsletter">
+            <input type="email" class="nl-input" placeholder="your@email.com" required aria-label="Email address" />
+            <button type="submit" class="nl-btn">Subscribe</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+  </body>
 </html>
+
+<script>
+  document.querySelectorAll('.topic-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.topic-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(
+    entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('revealed'); observer.unobserve(e.target); }
+    }),
+    { threshold: 0.08 }
+  );
+  revealEls.forEach(el => observer.observe(el));
+</script>
+
+<style>
+  :global(body) { overflow-x: hidden; }
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .reveal.revealed { opacity: 1; transform: none; }
+
+  /* ── Page Header ── */
+  .page-header {
+    background: var(--bg-base);
+    padding: 5rem 2rem 3rem;
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+  }
+  .page-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .page-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin: 0 0 0.6rem;
+  }
+  .page-sub {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 54ch;
+    line-height: 1.6;
+  }
+
+  /* ── Topics strip ── */
+  .topics-bar {
+    background: var(--bg-base);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07);
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+  }
+  .topics-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .topics-scroll {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0.1rem 0;
+  }
+  .topics-scroll::-webkit-scrollbar { display: none; }
+
+  .topics-fade-left, .topics-fade-right {
+    position: absolute; top: 0; bottom: 0; width: 2.5rem;
+    pointer-events: none; z-index: 1;
+  }
+  .topics-fade-left  { left: 0;  background: linear-gradient(to right, var(--bg-base), transparent); }
+  .topics-fade-right { right: 0; background: linear-gradient(to left,  var(--bg-base), transparent); }
+
+  .topic-pill {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.4em 1em;
+    border-radius: 999px;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    min-height: 36px;
+    font-family: var(--font-body);
+  }
+  .topic-pill:hover { border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22); color: var(--text-primary); }
+  .topic-pill.active { background: var(--accent); color: #0f0f11; border-color: var(--accent); font-weight: 600; }
+
+  /* ── Articles Section ── */
+  .articles-section {
+    padding: 3rem 2rem;
+  }
+  .articles-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .posts-group { margin-bottom: 2.5rem; }
+
+  .group-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07);
+  }
+
+  .articles-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .article-row {
+    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07);
+  }
+  .article-row:first-child { border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07); }
+
+  .article-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.4rem 0;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s;
+  }
+  .article-link:hover { opacity: 1; }
+  .article-link:hover .article-title { color: var(--accent); }
+  .article-link:hover .article-arrow { color: var(--accent); transform: translateX(4px); }
+  .article-row:nth-child(even) .article-link:hover { background: oklch(from var(--text-primary, #e8e8e0) l c h / 0.015); }
+
+  .article-num {
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    opacity: 0.35;
+    flex-shrink: 0;
+    padding-top: 0.15em;
+    min-width: 2ch;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .article-body { flex: 1; min-width: 0; }
+
+  .article-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .article-date { font-size: 0.78rem; color: var(--text-muted); }
+
+  .article-title {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+    line-height: 1.35;
+    transition: color 0.15s;
+  }
+
+  .article-excerpt {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .article-arrow {
+    font-size: 1rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    padding-top: 0.2em;
+    transition: color 0.15s, transform 0.15s;
+  }
+
+  /* Tags */
+  .tag { display: inline-block; background: var(--accent-dim); color: var(--accent); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.2em 0.7em; border-radius: 4px; }
+  .tag-xs { font-size: 0.65rem; padding: 0.15em 0.55em; }
+
+  /* Load more */
+  .load-more-wrap { display: flex; justify-content: center; padding: 2.5rem 0 0; }
+  .btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: none;
+    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
+    border-radius: 7px;
+    padding: 0.7em 1.75em;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    font-family: var(--font-body);
+    min-height: 44px;
+  }
+  .btn-load-more:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.25); }
+
+  /* ── Newsletter ── */
+  .newsletter-section {
+    background: var(--bg-surface);
+    border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
+    padding: 4.5rem 2rem;
+    margin-top: 3rem;
+  }
+  .newsletter-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+  .nl-text { flex: 1; min-width: 200px; }
+  .nl-eyebrow { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
+  .nl-headline { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text-primary); margin: 0 0 0.4rem; line-height: 1.15; }
+  .nl-proof { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+  .nl-form { flex: 1; min-width: 280px; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .nl-input { flex: 1; min-width: 200px; background: var(--bg-base); border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12); border-radius: 7px; padding: 0.7em 1em; font-size: 0.9rem; color: var(--text-primary); font-family: var(--font-body); outline: none; transition: border-color 0.15s; min-height: 44px; }
+  .nl-input::placeholder { color: var(--text-muted); }
+  .nl-input:focus { border-color: var(--accent); }
+  .nl-btn { background: var(--accent); color: #0f0f11; font-weight: 600; font-size: 0.875rem; padding: 0.7em 1.5em; border-radius: 7px; border: none; cursor: pointer; font-family: var(--font-body); transition: opacity 0.15s; white-space: nowrap; min-height: 44px; }
+  .nl-btn:hover { opacity: 0.85; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .page-header { padding: 3.5rem 1rem 2rem; }
+    .topics-bar { padding: 0.75rem 1rem; }
+    .articles-section { padding: 2rem 1rem; }
+    .article-link { gap: 0.75rem; }
+    .article-num { display: none; }
+    .newsletter-section { padding: 3rem 1rem; }
+  }
+</style>
