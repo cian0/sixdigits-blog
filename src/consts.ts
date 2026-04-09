@@ -2,4 +2,4 @@
 // You can import this data from anywhere in your site by using the `import` keyword.
 
 export const SITE_TITLE = 'Six Digits';
-export const SITE_DESCRIPTION = 'Practical insights for tech professionals navigating the AI era — and fresh graduates learning to build careers with AI as their edge.';
+export const SITE_DESCRIPTION = 'Career strategy for tech professionals and new grads navigating the AI era — building careers with real earning power in a world of AI.';

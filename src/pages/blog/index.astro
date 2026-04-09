@@ -16,54 +16,19 @@ function readTime(body: string | undefined): string {
   return `${Math.max(1, Math.round(words / 200))} min read`;
 }
 
-// Dummy posts to pad the list with realistic content
-const dummyPosts = [
-  {
-    id: null,
-    slug: null,
-    category: 'AI Tools',
-    title: 'How AI Agents Are Replacing the Junior Dev Workflow',
-    description: 'Agentic loops, tool-use, and the new reality of software delivery — what it means when your IDE can ship a PR unattended.',
-    date: 'Mar 18, 2026',
-    readTime: '7 min read',
-  },
-  {
-    id: null,
-    slug: null,
-    category: 'Opinion',
-    title: 'The Prompt Engineer Is Already Obsolete',
-    description: 'Why the hottest job title of 2023 is fading, and what actually matters in a world of frontier models.',
-    date: 'Mar 10, 2026',
-    readTime: '5 min read',
-  },
-  {
-    id: null,
-    slug: null,
-    category: 'Data Engineering',
-    title: 'Data Engineering in the Age of LLM Pipelines',
-    description: 'Embedding stores, vector DBs, and the new data stack emerging around retrieval-augmented generation.',
-    date: 'Feb 28, 2026',
-    readTime: '9 min read',
-  },
-  {
-    id: null,
-    slug: null,
-    category: 'Career',
-    title: 'Senior Engineers Are Thriving — Here\'s Exactly Why',
-    description: 'The AI wave isn\'t flattening the org chart; it\'s amplifying the gap between those who can architect systems and those who cannot.',
-    date: 'Feb 20, 2026',
-    readTime: '6 min read',
-  },
-  {
-    id: null,
-    slug: null,
-    category: 'Automation',
-    title: 'GitHub Copilot Workspace: A Week in the Trenches',
-    description: 'We ran a real-world sprint with Copilot Workspace as the primary implementation tool. Here\'s what broke, what shipped, and what surprised us.',
-    date: 'Feb 14, 2026',
-    readTime: '8 min read',
-  },
-];
+function getCategory(post: (typeof posts)[0]): string {
+  const tags = (post.data as any).tags;
+  if (tags && tags.length > 0) return tags[0];
+  const title = post.data.title.toLowerCase();
+  if (title.includes('data') || title.includes('rag') || title.includes('pipeline')) return 'Data Engineering';
+  if (title.includes('senior') || title.includes('career') || title.includes('job')) return 'Career';
+  if (title.includes('ai') || title.includes('llm') || title.includes('model')) return 'AI Tools';
+  if (title.includes('automat') || title.includes('agent')) return 'Automation';
+  return 'AI';
+}
+
+// Collect unique categories from real posts for the filter strip
+const allCategories = ['All', ...Array.from(new Set(posts.map(p => getCategory(p))))];
 ---
 
 <!doctype html>
@@ -82,104 +47,65 @@ const dummyPosts = [
             <span class="live-dot" aria-hidden="true"></span>
             <span>All Articles</span>
           </div>
-          <h1 class="page-title">The Intelligence Brief</h1>
-          <p class="page-sub">Dispatches from the frontier of AI, automation, and the future of work.</p>
+          <h1 class="page-title">Six Digits</h1>
+          <p class="page-sub">Practical strategy for tech professionals and new grads navigating the AI era — building careers with real earning power.</p>
         </div>
       </div>
 
       <!-- ── Topics filter strip ── -->
-      <div class="topics-bar">
-        <div class="topics-bar-inner">
-          <div class="topics-fade-left" aria-hidden="true"></div>
-          <div class="topics-scroll" role="list">
-            {['All', 'AI Tools', 'Automation', 'Data Engineering', 'Career', 'Opinion'].map((t, i) => (
-              <button
-                class={`topic-pill${i === 0 ? ' active' : ''}`}
-                role="listitem"
-                data-topic={t}
-                type="button"
-              >{t}</button>
-            ))}
+      {allCategories.length > 1 && (
+        <div class="topics-bar">
+          <div class="topics-bar-inner">
+            <div class="topics-fade-left" aria-hidden="true"></div>
+            <div class="topics-scroll" role="list">
+              {allCategories.map((t, i) => (
+                <button
+                  class={`topic-pill${i === 0 ? ' active' : ''}`}
+                  role="listitem"
+                  data-topic={t}
+                  type="button"
+                >{t}</button>
+              ))}
+            </div>
+            <div class="topics-fade-right" aria-hidden="true"></div>
           </div>
-          <div class="topics-fade-right" aria-hidden="true"></div>
         </div>
-      </div>
+      )}
 
       <!-- ── Articles ── -->
       <section class="articles-section" aria-label="Blog posts">
         <div class="articles-inner">
-
-          <!-- Real posts (if any) at top -->
-          {posts.length > 0 && (
-            <div class="posts-group">
-              <div class="group-label">Latest</div>
-              <ol class="articles-list">
-                {posts.map((post, i) => (
-                  <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
-                    <a href={`/blog/${post.id}/`} class="article-link">
-                      <span class="article-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                      <div class="article-body">
-                        <div class="article-meta-row">
-                          <span class="tag tag-xs">AI</span>
-                          <span class="article-date">
-                            <FormattedDate date={post.data.pubDate} />
-                            &nbsp;·&nbsp;{readTime(post.body)}
-                          </span>
-                        </div>
-                        <h2 class="article-title">{post.data.title}</h2>
-                        {post.data.description && (
-                          <p class="article-excerpt">{post.data.description}</p>
-                        )}
-                      </div>
-                      <span class="article-arrow" aria-hidden="true">→</span>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          <!-- Dummy posts -->
-          <div class="posts-group">
-            {posts.length > 0 && <div class="group-label">More from the archive</div>}
-            <ol class="articles-list" start={posts.length + 1}>
-              {dummyPosts.map((post, i) => (
-                <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
-                  <a href="#" class="article-link">
-                    <span class="article-num" aria-hidden="true">{String(posts.length + i + 1).padStart(2, '0')}</span>
+          {posts.length === 0 ? (
+            <p class="empty-state">No posts yet. Check back soon.</p>
+          ) : (
+            <ol class="articles-list">
+              {posts.map((post, i) => (
+                <li
+                  class="article-row reveal"
+                  data-category={getCategory(post)}
+                  style={`animation-delay:${i * 60}ms`}
+                >
+                  <a href={`/blog/${post.id}/`} class="article-link">
+                    <span class="article-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     <div class="article-body">
                       <div class="article-meta-row">
-                        <span class="tag tag-xs">{post.category}</span>
-                        <span class="article-date">{post.date} · {post.readTime}</span>
+                        <span class="tag tag-xs">{getCategory(post)}</span>
+                        <span class="article-date">
+                          <FormattedDate date={post.data.pubDate} />
+                          &nbsp;·&nbsp;{readTime(post.body)}
+                        </span>
                       </div>
-                      <h2 class="article-title">{post.title}</h2>
-                      <p class="article-excerpt">{post.description}</p>
+                      <h2 class="article-title">{post.data.title}</h2>
+                      {post.data.description && (
+                        <p class="article-excerpt">{post.data.description}</p>
+                      )}
                     </div>
                     <span class="article-arrow" aria-hidden="true">→</span>
                   </a>
                 </li>
               ))}
             </ol>
-          </div>
-
-          <div class="load-more-wrap">
-            <button class="btn-load-more" type="button">Load more articles</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Newsletter ── -->
-      <section class="newsletter-section reveal" aria-label="Newsletter">
-        <div class="newsletter-inner">
-          <div class="nl-text">
-            <span class="nl-eyebrow">Newsletter</span>
-            <h2 class="nl-headline">Stay ahead of the curve.</h2>
-            <p class="nl-proof">Join 12,000+ readers. No spam. Unsubscribe anytime.</p>
-          </div>
-          <form class="nl-form" onsubmit="return false;" aria-label="Subscribe to newsletter">
-            <input type="email" class="nl-input" placeholder="your@email.com" required aria-label="Email address" />
-            <button type="submit" class="nl-btn">Subscribe</button>
-          </form>
+          )}
         </div>
       </section>
     </main>
@@ -189,13 +115,27 @@ const dummyPosts = [
 </html>
 
 <script>
-  document.querySelectorAll('.topic-pill').forEach(btn => {
+  // ── Category filter ───────────────────────────────
+  const pills = document.querySelectorAll<HTMLButtonElement>('.topic-pill');
+  const rows  = document.querySelectorAll<HTMLLIElement>('.article-row');
+
+  pills.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.topic-pill').forEach(b => b.classList.remove('active'));
+      pills.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
+      const topic = btn.dataset.topic ?? 'All';
+      rows.forEach(row => {
+        if (topic === 'All' || row.dataset.category === topic) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
     });
   });
 
+  // ── Scroll reveal ─────────────────────────────────
   const revealEls = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver(
     entries => entries.forEach(e => {
@@ -326,17 +266,11 @@ const dummyPosts = [
     margin: 0 auto;
   }
 
-  .posts-group { margin-bottom: 2.5rem; }
-
-  .group-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .empty-state {
     color: var(--text-muted);
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.07);
+    font-size: 1rem;
+    padding: 3rem 0;
+    text-align: center;
   }
 
   .articles-list {
@@ -419,51 +353,6 @@ const dummyPosts = [
   .tag { display: inline-block; background: var(--accent-dim); color: var(--accent); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.2em 0.7em; border-radius: 4px; }
   .tag-xs { font-size: 0.65rem; padding: 0.15em 0.55em; }
 
-  /* Load more */
-  .load-more-wrap { display: flex; justify-content: center; padding: 2.5rem 0 0; }
-  .btn-load-more {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: none;
-    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
-    border-radius: 7px;
-    padding: 0.7em 1.75em;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-    font-family: var(--font-body);
-    min-height: 44px;
-  }
-  .btn-load-more:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.25); }
-
-  /* ── Newsletter ── */
-  .newsletter-section {
-    background: var(--bg-surface);
-    border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
-    padding: 4.5rem 2rem;
-    margin-top: 3rem;
-  }
-  .newsletter-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-  }
-  .nl-text { flex: 1; min-width: 200px; }
-  .nl-eyebrow { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
-  .nl-headline { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text-primary); margin: 0 0 0.4rem; line-height: 1.15; }
-  .nl-proof { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
-  .nl-form { flex: 1; min-width: 280px; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .nl-input { flex: 1; min-width: 200px; background: var(--bg-base); border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12); border-radius: 7px; padding: 0.7em 1em; font-size: 0.9rem; color: var(--text-primary); font-family: var(--font-body); outline: none; transition: border-color 0.15s; min-height: 44px; }
-  .nl-input::placeholder { color: var(--text-muted); }
-  .nl-input:focus { border-color: var(--accent); }
-  .nl-btn { background: var(--accent); color: #0f0f11; font-weight: 600; font-size: 0.875rem; padding: 0.7em 1.5em; border-radius: 7px; border: none; cursor: pointer; font-family: var(--font-body); transition: opacity 0.15s; white-space: nowrap; min-height: 44px; }
-  .nl-btn:hover { opacity: 0.85; }
-
   /* Responsive */
   @media (max-width: 640px) {
     .page-header { padding: 3.5rem 1rem 2rem; }
@@ -471,6 +360,5 @@ const dummyPosts = [
     .articles-section { padding: 2rem 1rem; }
     .article-link { gap: 0.75rem; }
     .article-num { display: none; }
-    .newsletter-section { padding: 3rem 1rem; }
   }
 </style>

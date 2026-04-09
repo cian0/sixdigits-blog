@@ -11,8 +11,8 @@ const posts = (await getCollection('blog')).sort(
 );
 
 const featured = posts[0];
-const bentoExtra = posts.slice(1, 4);
-const listPosts  = posts.slice(0, 6);
+const bentoPosts = posts.slice(1, 4);   // up to 3 cards in bento grid
+const listPosts  = posts.slice(0, 20);  // all posts for the list
 
 function readTime(body: string | undefined): string {
   if (!body) return '5 min read';
@@ -20,79 +20,17 @@ function readTime(body: string | undefined): string {
   return `${Math.max(1, Math.round(words / 200))} min read`;
 }
 
-// Dummy bento cards to fill grid if not enough real posts
-const dummyBento = [
-  {
-    id: null,
-    title: 'How AI Agents Are Replacing the Junior Dev Workflow',
-    description: 'Agentic loops, tool-use, and the new reality of software delivery — what it means when your IDE can ship a PR unattended.',
-    pubDate: new Date('2026-03-18'),
-    category: 'AI Tools',
-    readTime: '7 min read',
-  },
-  {
-    id: null,
-    title: 'The Prompt Engineer Is Already Obsolete',
-    description: 'Why the hottest job title of 2023 is fading, and what actually matters in a world of frontier models.',
-    pubDate: new Date('2026-03-10'),
-    category: 'Opinion',
-    readTime: '5 min read',
-  },
-  {
-    id: null,
-    title: 'Data Engineering in the Age of LLM Pipelines',
-    description: 'Embedding stores, vector DBs, and the new data stack emerging around retrieval-augmented generation.',
-    pubDate: new Date('2026-02-28'),
-    category: 'Data Engineering',
-    readTime: '9 min read',
-  },
-];
-
-// Dummy list articles
-const dummyList = [
-  {
-    category: 'Career',
-    title: 'Senior Engineers Are Thriving — Here\'s Exactly Why',
-    excerpt: 'The AI wave isn\'t flattening the org chart; it\'s amplifying the gap between those who can architect systems and those who cannot.',
-    date: 'Mar 24, 2026',
-    readTime: '6 min',
-  },
-  {
-    category: 'Automation',
-    title: 'GitHub Copilot Workspace: A Week in the Trenches',
-    excerpt: 'We ran a real-world sprint with Copilot Workspace as the primary implementation tool. Here\'s what broke, what shipped, and what surprised us.',
-    date: 'Mar 20, 2026',
-    readTime: '8 min',
-  },
-  {
-    category: 'AI Tools',
-    title: 'Claude 3.5 vs GPT-4o for Code Review: A Practical Benchmark',
-    excerpt: 'We threw 200 real PRs at both models. The results were more nuanced than the leaderboard suggests.',
-    date: 'Mar 15, 2026',
-    readTime: '10 min',
-  },
-  {
-    category: 'Data Engineering',
-    title: 'Why Your RAG Pipeline Is Lying to You',
-    excerpt: 'Retrieval-augmented generation sounds bulletproof in theory. In production, subtle chunking and embedding errors silently degrade answer quality.',
-    date: 'Mar 10, 2026',
-    readTime: '7 min',
-  },
-  {
-    category: 'Opinion',
-    title: 'The 10x Engineer Myth Was Always Wrong. Now It\'s Dangerous.',
-    excerpt: 'When AI tools can triple output overnight, glorifying raw individual productivity misses the actual leverage point: judgment.',
-    date: 'Mar 5, 2026',
-    readTime: '5 min',
-  },
-  {
-    category: 'Career',
-    title: 'How to Negotiate Your Salary in an AI-Saturated Job Market',
-    excerpt: 'Hiring is slower, but compensation for senior talent is rising. Here\'s how to position and negotiate when you\'re competing against AI-augmented peers.',
-    date: 'Feb 28, 2026',
-    readTime: '6 min',
-  },
-];
+// Derive category from tags or fallback
+function getCategory(post: (typeof posts)[0]): string {
+  const tags = (post.data as any).tags;
+  if (tags && tags.length > 0) return tags[0];
+  const title = post.data.title.toLowerCase();
+  if (title.includes('data') || title.includes('rag') || title.includes('pipeline')) return 'Data Engineering';
+  if (title.includes('senior') || title.includes('career') || title.includes('job')) return 'Career';
+  if (title.includes('ai') || title.includes('llm') || title.includes('model')) return 'AI Tools';
+  if (title.includes('automat') || title.includes('agent')) return 'Automation';
+  return 'AI';
+}
 ---
 
 <!doctype html>
@@ -112,26 +50,19 @@ const dummyList = [
       <div class="hero-inner">
         <div class="hero-eyebrow">
           <span class="live-dot" aria-hidden="true"></span>
-          <span>AI · Automation · Future of Work</span>
+          <span>Career · AI · Future of Tech</span>
         </div>
 
         <h1 class="hero-headline">
-          The Intelligence<br/><em>Brief.</em>
+          Build a Career<br/>That <em>Compounds.</em>
         </h1>
 
         <p class="hero-sub">
-          Dispatches from the frontier of AI, automation, and the future of work.
+          Practical strategy for tech professionals and new grads navigating the AI era — and building careers with real earning power.
         </p>
 
         <div class="hero-actions">
           <a href="/blog" class="btn-primary">Read the blog</a>
-          <a href="/rss.xml" class="btn-ghost">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/>
-              <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/>
-            </svg>
-            RSS
-          </a>
         </div>
       </div>
 
@@ -162,119 +93,41 @@ const dummyList = [
 
     <main>
       <!-- ════════════════════════════════════
-           BENTO GRID
+           BENTO GRID (only if we have extra real posts)
       ════════════════════════════════════ -->
-      <section class="section bento-section" aria-label="Featured posts">
-        <div class="section-header">
-          <h2 class="section-title">Recent Stories</h2>
-          <a href="/blog" class="section-link">All posts →</a>
-        </div>
+      {bentoPosts.length > 0 && (
+        <section class="section bento-section" aria-label="Featured posts">
+          <div class="section-header">
+            <h2 class="section-title">Recent Stories</h2>
+            <a href="/blog" class="section-link">All posts →</a>
+          </div>
 
-        <div class="bento-grid">
-          <!-- Large card (real first extra post or dummy) -->
-          {(() => {
-            const p = bentoExtra[0];
-            const d = dummyBento[0];
-            const href = p ? `/blog/${p.id}/` : '#';
-            const title = p ? p.data.title : d.title;
-            const desc  = p ? (p.data.description || d.description) : d.description;
-            const date  = p ? p.data.pubDate : d.pubDate;
-            const rt    = p ? readTime(p.body) : d.readTime;
-            const cat   = d.category;
-            return (
-              <a href={href} class="bento-card bento-large reveal">
+          <div class={`bento-grid bento-count-${Math.min(bentoPosts.length, 3)}`}>
+            {bentoPosts.slice(0, 3).map((p, i) => (
+              <a
+                href={`/blog/${p.id}/`}
+                class={`bento-card reveal ${i === 0 ? 'bento-large' : 'bento-small'}`}
+                style={`animation-delay:${i * 80}ms`}
+              >
                 <div class="bento-body">
-                  <span class="tag tag-sm">{cat}</span>
-                  <h3 class="bento-title">{title}</h3>
-                  <p class="bento-desc">{desc}</p>
+                  <span class="tag tag-sm">{getCategory(p)}</span>
+                  <h3 class={`bento-title${i > 0 ? ' bento-title-sm' : ''}`}>{p.data.title}</h3>
+                  {p.data.description && i === 0 && (
+                    <p class="bento-desc">{p.data.description}</p>
+                  )}
                 </div>
                 <div class="bento-footer">
                   <div class="author-row">
                     <div class="avatar" aria-hidden="true">S</div>
                     <span class="author-name">sixdigits.ai</span>
                   </div>
-                  <span class="bento-meta"><FormattedDate date={date} /> · {rt}</span>
+                  <span class="bento-meta"><FormattedDate date={p.data.pubDate} /> · {readTime(p.body)}</span>
                 </div>
               </a>
-            );
-          })()}
-
-          <!-- Two stacked small cards -->
-          <div class="bento-stack">
-            {[1, 2].map(i => {
-              const p = bentoExtra[i];
-              const d = dummyBento[i];
-              const href  = p ? `/blog/${p.id}/` : '#';
-              const title = p ? p.data.title : d.title;
-              const desc  = p ? (p.data.description || d.description) : d.description;
-              const date  = p ? p.data.pubDate : d.pubDate;
-              const rt    = p ? readTime(p.body) : d.readTime;
-              const cat   = d.category;
-              return (
-                <a href={href} class="bento-card bento-small reveal" style={`animation-delay:${i * 80}ms`}>
-                  <div class="bento-body">
-                    <span class="tag tag-sm">{cat}</span>
-                    <h3 class="bento-title bento-title-sm">{title}</h3>
-                  </div>
-                  <div class="bento-footer">
-                    <div class="author-row">
-                      <div class="avatar avatar-xs" aria-hidden="true">S</div>
-                      <span class="author-name">{rt}</span>
-                    </div>
-                    <span class="bento-meta"><FormattedDate date={date} /></span>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-
-          <!-- Full-width horizontal card -->
-          {(() => {
-            const d = dummyBento[2];
-            return (
-              <a href="/blog" class="bento-card bento-full reveal">
-                <div class="bento-full-inner">
-                  <div>
-                    <span class="tag tag-sm">{d.category}</span>
-                    <h3 class="bento-title">{d.title}</h3>
-                    <p class="bento-desc">{d.description}</p>
-                  </div>
-                  <div class="bento-full-right">
-                    <div class="author-row">
-                      <div class="avatar" aria-hidden="true">S</div>
-                      <div>
-                        <div class="author-name">sixdigits.ai</div>
-                        <div class="bento-meta">{d.readTime}</div>
-                      </div>
-                    </div>
-                    <span class="bento-arrow">→</span>
-                  </div>
-                </div>
-              </a>
-            );
-          })()}
-        </div>
-      </section>
-
-      <!-- ════════════════════════════════════
-           TOPICS STRIP
-      ════════════════════════════════════ -->
-      <section class="section topics-section" aria-label="Topics">
-        <div class="topics-outer">
-          <div class="topics-fade-left" aria-hidden="true"></div>
-          <div class="topics-scroll" role="list">
-            {['All', 'AI Tools', 'Automation', 'Data Engineering', 'Career', 'Opinion'].map((t, i) => (
-              <button
-                class={`topic-pill${i === 0 ? ' active' : ''}`}
-                role="listitem"
-                data-topic={t}
-                type="button"
-              >{t}</button>
             ))}
           </div>
-          <div class="topics-fade-right" aria-hidden="true"></div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <!-- ════════════════════════════════════
            LATEST ARTICLES LIST
@@ -285,75 +138,27 @@ const dummyList = [
         </div>
 
         <ol class="articles-list">
-          {dummyList.map((art, i) => (
+          {listPosts.map((post, i) => (
             <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
-              <a href="/blog" class="article-link">
+              <a href={`/blog/${post.id}/`} class="article-link">
                 <span class="article-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                 <div class="article-body">
                   <div class="article-meta-row">
-                    <span class="tag tag-xs">{art.category}</span>
-                    <span class="article-date">{art.date} · {art.readTime} read</span>
+                    <span class="tag tag-xs">{getCategory(post)}</span>
+                    <span class="article-date">
+                      <FormattedDate date={post.data.pubDate} /> · {readTime(post.body)} read
+                    </span>
                   </div>
-                  <h3 class="article-title">{art.title}</h3>
-                  <p class="article-excerpt">{art.excerpt}</p>
+                  <h3 class="article-title">{post.data.title}</h3>
+                  {post.data.description && (
+                    <p class="article-excerpt">{post.data.description}</p>
+                  )}
                 </div>
                 <span class="article-arrow" aria-hidden="true">→</span>
               </a>
             </li>
           ))}
         </ol>
-
-        <!-- Real posts if available -->
-        {listPosts.length > 0 && (
-          <div class="real-posts-divider">
-            <span>From the blog</span>
-          </div>
-        )}
-        {listPosts.map((post, i) => (
-          <ol class="articles-list" start={dummyList.length + 1 + i}>
-            <li class="article-row reveal" style={`animation-delay:${i * 60}ms`}>
-              <a href={`/blog/${post.id}/`} class="article-link">
-                <span class="article-num" aria-hidden="true">{String(dummyList.length + 1 + i).padStart(2, '0')}</span>
-                <div class="article-body">
-                  <div class="article-meta-row">
-                    <span class="tag tag-xs">AI</span>
-                    <span class="article-date"><FormattedDate date={post.data.pubDate} /> · {readTime(post.body)} read</span>
-                  </div>
-                  <h3 class="article-title">{post.data.title}</h3>
-                  {post.data.description && <p class="article-excerpt">{post.data.description}</p>}
-                </div>
-                <span class="article-arrow" aria-hidden="true">→</span>
-              </a>
-            </li>
-          </ol>
-        ))}
-
-        <div class="load-more-wrap">
-          <button class="btn-load-more" type="button">Load more articles</button>
-        </div>
-      </section>
-
-      <!-- ════════════════════════════════════
-           NEWSLETTER CTA
-      ════════════════════════════════════ -->
-      <section class="section newsletter-section reveal" aria-label="Newsletter">
-        <div class="newsletter-inner">
-          <div class="newsletter-text">
-            <span class="nl-eyebrow">Newsletter</span>
-            <h2 class="nl-headline">Stay ahead of the curve.</h2>
-            <p class="nl-proof">Join 12,000+ readers. No spam. Unsubscribe anytime.</p>
-          </div>
-          <form class="nl-form" onsubmit="return false;" aria-label="Subscribe to newsletter">
-            <input
-              type="email"
-              class="nl-input"
-              placeholder="your@email.com"
-              required
-              aria-label="Email address"
-            />
-            <button type="submit" class="nl-btn">Subscribe</button>
-          </form>
-        </div>
       </section>
     </main>
 
@@ -362,19 +167,11 @@ const dummyList = [
 </html>
 
 <script>
-  // ── Topic pills ──────────────────────────────────────────────
-  document.querySelectorAll('.topic-pill').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.topic-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
   // ── Scroll reveal (IntersectionObserver) ────────────────────
   const revealEls = document.querySelectorAll('.reveal');
   const observer  = new IntersectionObserver(
     (entries) => {
-      entries.forEach((entry, idx) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add('revealed');
           observer.unobserve(entry.target);
@@ -428,7 +225,6 @@ const dummyList = [
     background-size: 256px 256px;
   }
 
-  /* No gradient blobs — just a single thin teal rule at bottom */
   .hero::after {
     content: '';
     position: absolute;
@@ -513,36 +309,17 @@ const dummyList = [
   }
   .btn-primary:hover { opacity: 0.85; color: #0f0f11; }
 
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 0.7em 1.1em;
-    border-radius: 7px;
-    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.10);
-    text-decoration: none;
-    transition: color 0.15s, border-color 0.15s;
-    min-height: 44px;
-  }
-  .btn-ghost:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22); opacity: 1; }
-
   /* ── Featured card ── */
   .featured-wrap {
     position: absolute;
     bottom: -2.5rem;
-    left: 0; right: 0;
     padding: 0 2rem;
     display: flex;
     justify-content: flex-start;
-    max-width: 1200px;
-    margin: 0 auto;
-    /* center absolute trick */
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
+    max-width: 1200px;
   }
 
   .featured-card {
@@ -598,9 +375,7 @@ const dummyList = [
     overflow: hidden;
   }
 
-  .featured-right {
-    flex-shrink: 0;
-  }
+  .featured-right { flex-shrink: 0; }
   .featured-cta-arrow {
     display: flex;
     align-items: center;
@@ -671,15 +446,19 @@ const dummyList = [
      BENTO GRID
   ════════════════════════════════════ */
   .bento-section {
-    padding-top: 6.5rem; /* clear the overlapping featured card */
+    padding-top: 6.5rem;
   }
 
   .bento-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: auto auto;
     gap: 1rem;
   }
+  /* 1 post → full width */
+  .bento-count-1 { grid-template-columns: 1fr; }
+  /* 2 posts → side by side */
+  .bento-count-2 { grid-template-columns: 2fr 1fr; }
+  /* 3 posts → large + stack */
+  .bento-count-3 { grid-template-columns: 2fr 1fr; }
 
   .bento-card {
     display: flex;
@@ -690,10 +469,9 @@ const dummyList = [
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    /* shadow not border for elevation */
     box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
     transition: box-shadow 0.2s, transform 0.2s;
-    min-height: 220px;
+    min-height: 200px;
   }
   .bento-card:hover {
     box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px oklch(from var(--text-primary, #e8e8e0) l c h / 0.18);
@@ -701,10 +479,11 @@ const dummyList = [
     opacity: 1;
   }
 
-  .bento-large { grid-column: 1; grid-row: 1; }
-  .bento-stack { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 1rem; }
-  .bento-small { min-height: 160px; }
-  .bento-full  { grid-column: 1 / -1; grid-row: 2; min-height: 140px; }
+  /* In a 2 or 3-col grid, first card spans left, rest stack right */
+  .bento-count-2 .bento-large,
+  .bento-count-3 .bento-large { grid-column: 1; }
+  .bento-count-2 .bento-small,
+  .bento-count-3 .bento-small { grid-column: 2; }
 
   .bento-body { flex: 1; }
   .bento-title {
@@ -752,99 +531,8 @@ const dummyList = [
     justify-content: center;
     flex-shrink: 0;
   }
-  .avatar-xs { width: 22px; height: 22px; font-size: 0.6rem; }
   .author-name { font-size: 0.78rem; color: var(--text-secondary); font-weight: 500; }
   .bento-meta { font-size: 0.76rem; color: var(--text-muted); }
-
-  /* Full-width bento card */
-  .bento-full-inner {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-  .bento-full-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1rem;
-    flex-shrink: 0;
-  }
-  .bento-arrow {
-    font-size: 1.2rem;
-    color: var(--accent);
-    transition: transform 0.15s;
-  }
-  .bento-card:hover .bento-arrow { transform: translateX(4px); }
-
-  /* ════════════════════════════════════
-     TOPICS STRIP
-  ════════════════════════════════════ */
-  .topics-section {
-    padding: 0 0 4rem;
-  }
-
-  .topics-outer {
-    position: relative;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .topics-scroll {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding: 0.25rem 0.25rem 0.75rem;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .topics-scroll::-webkit-scrollbar { display: none; }
-
-  .topics-fade-left,
-  .topics-fade-right {
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 3rem;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .topics-fade-left {
-    left: 0;
-    background: linear-gradient(to right, var(--bg-base), transparent);
-  }
-  .topics-fade-right {
-    right: 0;
-    background: linear-gradient(to left, var(--bg-base), transparent);
-  }
-
-  .topic-pill {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    font-size: 0.82rem;
-    font-weight: 500;
-    padding: 0.45em 1.1em;
-    border-radius: 999px;
-    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    min-height: 44px;
-    font-family: var(--font-body);
-  }
-  .topic-pill:hover {
-    border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.22);
-    color: var(--text-primary);
-  }
-  .topic-pill.active {
-    background: var(--accent);
-    color: #0f0f11;
-    border-color: var(--accent);
-    font-weight: 600;
-  }
 
   /* ════════════════════════════════════
      ARTICLES LIST
@@ -877,7 +565,6 @@ const dummyList = [
   .article-link:hover .article-title { color: var(--accent); }
   .article-link:hover .article-arrow { color: var(--accent); transform: translateX(4px); }
   .article-link:hover { opacity: 1; }
-  /* Alternating hover tint */
   .article-row:nth-child(even) .article-link:hover { background: oklch(from var(--text-primary, #e8e8e0) l c h / 0.02); }
 
   .article-num {
@@ -932,143 +619,14 @@ const dummyList = [
     transition: color 0.15s, transform 0.15s;
   }
 
-  .real-posts-divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 0 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .real-posts-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
-  }
-
-  .load-more-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 2.5rem 0 0;
-  }
-  .btn-load-more {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: none;
-    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
-    border-radius: 7px;
-    padding: 0.7em 1.75em;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-    font-family: var(--font-body);
-    min-height: 44px;
-  }
-  .btn-load-more:hover { color: var(--text-primary); border-color: oklch(from var(--text-primary, #e8e8e0) l c h / 0.25); }
-
-  /* ════════════════════════════════════
-     NEWSLETTER
-  ════════════════════════════════════ */
-  .newsletter-section {
-    background: var(--bg-surface);
-    max-width: 100% !important;
-    padding: 5rem 2rem !important;
-    border-top: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
-    border-bottom: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.08);
-  }
-
-  .newsletter-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-  }
-
-  .newsletter-text { flex: 1; min-width: 200px; }
-
-  .nl-eyebrow {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.6rem;
-  }
-  .nl-headline {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
-    color: var(--text-primary);
-    margin: 0 0 0.5rem;
-    line-height: 1.15;
-  }
-  .nl-proof {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    margin: 0;
-  }
-
-  .nl-form {
-    flex: 1;
-    min-width: 280px;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  .nl-input {
-    flex: 1;
-    min-width: 200px;
-    background: var(--bg-base);
-    border: 1px solid oklch(from var(--text-primary, #e8e8e0) l c h / 0.12);
-    border-radius: 7px;
-    padding: 0.7em 1em;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    outline: none;
-    transition: border-color 0.15s;
-    min-height: 44px;
-  }
-  .nl-input::placeholder { color: var(--text-muted); }
-  .nl-input:focus { border-color: var(--accent); }
-
-  .nl-btn {
-    background: var(--accent);
-    color: #0f0f11;
-    font-weight: 600;
-    font-size: 0.875rem;
-    padding: 0.7em 1.5em;
-    border-radius: 7px;
-    border: none;
-    cursor: pointer;
-    font-family: var(--font-body);
-    transition: opacity 0.15s;
-    white-space: nowrap;
-    min-height: 44px;
-  }
-  .nl-btn:hover { opacity: 0.85; }
-
   /* ════════════════════════════════════
      RESPONSIVE
   ════════════════════════════════════ */
   @media (max-width: 900px) {
-    .bento-grid {
-      grid-template-columns: 1fr;
-    }
-    .bento-stack { flex-direction: row; }
-    .bento-small { flex: 1; }
-    .bento-full { grid-column: 1; }
-    .bento-full-inner { flex-direction: column; }
-    .bento-full-right { flex-direction: row; align-items: center; }
+    .bento-count-2,
+    .bento-count-3 { grid-template-columns: 1fr; }
+    .bento-count-2 .bento-small,
+    .bento-count-3 .bento-small { grid-column: 1; }
   }
 
   @media (max-width: 640px) {
@@ -1078,8 +636,6 @@ const dummyList = [
     .featured-right { display: none; }
     .bento-section { padding-top: 8rem; }
     .section { padding: 3rem 1rem; }
-    .bento-stack { flex-direction: column; }
-    .newsletter-section { padding: 3rem 1rem !important; }
     .article-link { gap: 0.75rem; }
     .article-num { display: none; }
   }
