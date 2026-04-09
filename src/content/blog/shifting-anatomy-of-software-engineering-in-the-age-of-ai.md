@@ -2,7 +2,6 @@
 title: 'The Shifting Anatomy of Software Engineering Work in the Age of AI'
 description: 'AI is automating the execution layer of software engineering. But the fundamental job — translating ambiguous human intent into reliable systems — was never about writing code. Here is the anatomy of what actually shifts.'
 pubDate: '2026-04-10'
-heroImage: '../../assets/blog-placeholder-1.jpg'
 tags: ['ai', 'software-engineering', 'career', 'data-engineering']
 ---
 

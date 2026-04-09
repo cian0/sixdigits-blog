@@ -59,7 +59,6 @@ new_post() {
 title: '${title}'
 description: '${description}'
 pubDate: '${date}'
-heroImage: '../../assets/blog-placeholder-1.jpg'
 tags: []
 ---
 
