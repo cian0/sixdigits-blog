@@ -13,7 +13,29 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 
 <html lang="en">
   <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead title={title} description={description} pubDate={pubDate} isArticle={true} />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": title,
+      "description": description,
+      "datePublished": pubDate.toISOString(),
+      ...(updatedDate ? { "dateModified": updatedDate.toISOString() } : {}),
+      "author": {
+        "@type": "Organization",
+        "name": "Six Digits",
+        "url": "https://sixdigits.ai"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Six Digits",
+        "url": "https://sixdigits.ai"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://sixdigits.ai/blog/${title.toLowerCase().replace(/\s+/g, '-')}/`
+      }
+    })} />
     <style>
       .hero-image { display: none; }
 
@@ -136,7 +158,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
         </a>
 
         <div class="hero-image">
-          {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+          {heroImage && <Image width={1020} height={510} src={heroImage} alt={title} />}
         </div>
 
         <header class="post-header">
