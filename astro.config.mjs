@@ -2,12 +2,21 @@
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import partytown from '@astrojs/partytown';
 import { defineConfig, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
-	integrations: [mdx(), sitemap()],
+	site: 'https://sixdigits.ai',
+	integrations: [
+		mdx(),
+		sitemap(),
+		partytown({
+			config: {
+				forward: ['dataLayer.push'],
+			},
+		}),
+	],
 	fonts: [
 		{
 			provider: fontProviders.local(),
